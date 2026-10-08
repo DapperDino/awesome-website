@@ -35,6 +35,14 @@ export default defineConfig({
               ],
           },
       },
+      {
+          provider: fontProviders.google(),
+          name: 'Charmonman',
+          cssVariable: '--font-title',
+          weights: [700],
+          styles: ['normal'],
+          fallbacks: ['serif'],
+      },
 	],
 
   vite: {
