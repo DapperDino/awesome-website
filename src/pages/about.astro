@@ -1,10 +1,14 @@
 ---
 import { Image } from 'astro:assets';
-import portrait from '../assets/katie.jpg';
+import { getEntry, render } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { SITE_TITLE } from '../consts';
+
+const entry = (await getEntry('about', 'about'))!;
+const { heading, photo, photoAlt } = entry.data;
+const { Content } = await render(entry);
 ---
 
 <!doctype html>
@@ -17,60 +21,18 @@ import { SITE_TITLE } from '../consts';
 		<main class="w-[960px]! py-12!">
 			<section class="flex flex-col items-center gap-8 md:flex-row md:items-start md:gap-12">
 				<Image
-					src={portrait}
-					alt="Portrait of Katie Rayson"
+					src={photo}
+					alt={photoAlt}
 					width={150}
 					height={150}
 					class="size-44 shrink-0 rounded-full! object-cover shadow-[var(--box-shadow)] ring-4 ring-white"
 				/>
 				<div class="text-center md:text-left">
 					<p class="m-0 text-sm font-bold tracking-widest text-[rgb(var(--gray))] uppercase">About</p>
-					<h1 class="font-title mt-1 mb-4 text-5xl font-bold">Hi, I'm Katie</h1>
-					<p class="m-0 mb-4">
-						I'm an artist working with clay and wire, and I run workshops for people who want to try
-						making something with their hands. Replace this paragraph with a short introduction in
-						your own words.
-					</p>
-					<p class="m-0">
-						Tell visitors what inspires your work, how you got started, and what you're making at the
-						moment.
-					</p>
-				</div>
-			</section>
-
-			<section class="mt-14 grid gap-6 md:grid-cols-3">
-				{
-					[
-						['Clay', 'A short note about your ceramics and sculpture work.'],
-						['Workshops', 'Details about the workshops you run and who they are for.'],
-						['Wire', 'A short note about your wire work and how you make it.'],
-					].map(([title, text]) => (
-						<div class="rounded-xl bg-white p-6 shadow-[0_2px_8px_rgba(var(--black),8%)]">
-							<h2 class="font-title m-0! mb-2! text-2xl! font-bold">{title}</h2>
-							<p class="m-0 text-[rgb(var(--gray))]">{text}</p>
-						</div>
-					))
-				}
-			</section>
-
-			<section class="mt-14 rounded-xl bg-[rgb(var(--gray-dark))] px-6 py-10 text-center text-white">
-				<h2 class="font-title m-0! mb-2! text-3xl! font-bold text-white">Get in touch</h2>
-				<p class="m-0 mb-5 text-[rgb(var(--gray-light))]">
-					Interested in a commission or a workshop? Send me a message on Instagram or LinkedIn.
-				</p>
-				<div class="flex justify-center gap-3">
-					<a
-						href="https://www.instagram.com/katie.rayson.art/"
-						target="_blank"
-						class="rounded-full bg-white px-5 py-2 font-bold text-[rgb(var(--black))]! no-underline"
-						>Instagram</a
-					>
-					<a
-						href="https://www.linkedin.com/in/katie-rayson-art/"
-						target="_blank"
-						class="rounded-full bg-white px-5 py-2 font-bold text-[rgb(var(--black))]! no-underline"
-						>LinkedIn</a
-					>
+					<h1 class="font-title mt-1 mb-4 text-5xl font-bold">{heading}</h1>
+					<div class="[&>p]:m-0 [&>p]:mb-4 [&>p:last-child]:mb-0">
+						<Content />
+					</div>
 				</div>
 			</section>
 		</main>
