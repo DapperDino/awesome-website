@@ -2,19 +2,17 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-const blog = defineCollection({
-	// Load Markdown and MDX files in the `src/content/blog/` directory.
-	loader: glob({ base: './src/content/blog', pattern: '**/*.{md,mdx}' }),
-	// Type-check frontmatter using a schema
+const gallery = defineCollection({
+	// Each gallery item is a JSON file in `src/content/gallery/`.
+	loader: glob({ base: './src/content/gallery', pattern: '**/*.json' }),
 	schema: ({ image }) =>
 		z.object({
-			title: z.string(),
+			name: z.string(),
 			description: z.string(),
-			// Transform string to Date object
-			pubDate: z.coerce.date(),
-			updatedDate: z.coerce.date().optional(),
-			heroImage: z.optional(image()),
+			year: z.number().int(),
+			// Path to a local image, relative to the JSON file.
+			image: image(),
 		}),
 });
 
-export const collections = { blog };
+export const collections = { gallery };

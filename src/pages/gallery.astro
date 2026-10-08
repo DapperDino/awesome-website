@@ -1,0 +1,104 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE } from '../consts';
+
+const items = (await getCollection('gallery')).sort(
+	(a, b) => b.data.year - a.data.year || a.data.name.localeCompare(b.data.name),
+);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Gallery | ${SITE_TITLE}`} description="A gallery of my artwork." />
+	</head>
+	<body>
+		<Header />
+		<main class="w-[960px]!">
+			<h1>Gallery</h1>
+			<ul class="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-6 p-0">
+				{
+					items.map((item) => (
+						<li>
+							<button
+								type="button"
+								data-card
+								class="group block w-full cursor-pointer border-0 bg-transparent p-0 text-left font-[inherit] text-[rgb(var(--black))]"
+								data-name={item.data.name}
+								data-description={item.data.description}
+								data-year={item.data.year}
+							>
+								<Image
+									src={item.data.image}
+									width={720}
+									height={540}
+									alt={item.data.name}
+									class="aspect-[4/3] h-auto w-full rounded-xl object-cover transition-shadow duration-200 group-hover:shadow-[var(--box-shadow)] group-focus-visible:shadow-[var(--box-shadow)]"
+								/>
+								<span class="mt-2 block font-bold">{item.data.name}</span>
+								<span class="block text-[rgb(var(--gray))]">{item.data.year}</span>
+							</button>
+							<template>
+								<Image
+									src={item.data.image}
+									width={1600}
+									alt={item.data.name}
+									class="block max-h-[70vh] w-full bg-[rgb(var(--gray-light))] object-contain"
+									loading="eager"
+								/>
+							</template>
+						</li>
+					))
+				}
+			</ul>
+		</main>
+		<dialog
+			id="viewer"
+			aria-labelledby="viewer-name"
+			class="m-auto max-h-[94vh] w-[min(94vw,960px)] overflow-auto rounded-xl border-0 p-0 shadow-[var(--box-shadow)] backdrop:bg-black/75"
+		>
+			<button
+				type="button"
+				class="close absolute top-2 right-2 size-10 cursor-pointer rounded-full border-0 bg-black/60 text-3xl leading-none text-white"
+				aria-label="Close"
+			>&times;</button>
+			<div class="viewer-image"></div>
+			<div class="px-6 pt-4 pb-6">
+				<h2 id="viewer-name" class="m-0!"></h2>
+				<p class="viewer-year mt-1 mb-3 text-[rgb(var(--gray))]"></p>
+				<p class="viewer-description m-0"></p>
+			</div>
+		</dialog>
+		<Footer />
+	</body>
+</html>
+
+
+<script>
+	const dialog = document.querySelector<HTMLDialogElement>('#viewer')!;
+	const imageBox = dialog.querySelector('.viewer-image')!;
+	const nameEl = dialog.querySelector('#viewer-name')!;
+	const yearEl = dialog.querySelector('.viewer-year')!;
+	const descEl = dialog.querySelector('.viewer-description')!;
+
+	document.querySelectorAll<HTMLButtonElement>('[data-card]').forEach((card) => {
+		card.addEventListener('click', () => {
+			const template = card.parentElement!.querySelector('template')!;
+			imageBox.replaceChildren(template.content.cloneNode(true));
+			nameEl.textContent = card.dataset.name ?? '';
+			yearEl.textContent = card.dataset.year ?? '';
+			descEl.textContent = card.dataset.description ?? '';
+			dialog.showModal();
+		});
+	});
+
+	dialog.querySelector('.close')!.addEventListener('click', () => dialog.close());
+	// Clicking the backdrop (the dialog element itself) closes the modal.
+	dialog.addEventListener('click', (e) => {
+		if (e.target === dialog) dialog.close();
+	});
+</script>
