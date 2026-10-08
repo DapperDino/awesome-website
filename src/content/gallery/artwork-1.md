@@ -1,6 +1,8 @@
 ---
 name: "Artwork 1"
 year: 2021
+mediums: [clay]
+themes: [nature, folklore]
 image: ../../assets/blog-placeholder-1.jpg
-description: "Placeholder description for artwork 1. Replace with details about the piece, such as medium and size."
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget ligula at risus pharetra euismod non nec nisi. Nam varius quis urna non tristique. Pellentesque maximus vestibulum rutrum."
 ---

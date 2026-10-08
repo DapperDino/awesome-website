@@ -1,6 +1,8 @@
 ---
 name: "Artwork 5"
 year: 2025
+mediums: [clay, wire]
+themes: [folklore]
 image: ../../assets/blog-placeholder-5.jpg
-description: "Placeholder description for artwork 5. Replace with details about the piece, such as medium and size."
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget ligula at risus pharetra euismod non nec nisi. Nam varius quis urna non tristique. Pellentesque maximus vestibulum rutrum."
 ---

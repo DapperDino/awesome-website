@@ -1,6 +1,8 @@
 ---
-name: "Artwork 3"
+name: "Clay Triceratops"
 year: 2023
-image: ../../assets/blog-placeholder-3.jpg
-description: "Placeholder description for artwork 3. Replace with details about the piece, such as medium and size."
+mediums: [clay]
+themes: [nature]
+image: ../../assets/clay-triceratops.webp
+description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget ligula at risus pharetra euismod non nec nisi. Nam varius quis urna non tristique. Pellentesque maximus vestibulum rutrum."
 ---
