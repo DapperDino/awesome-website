@@ -1,0 +1,207 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE } from '../consts';
+
+const items = (await getCollection('gallery')).sort(
+	(a, b) => b.data.year - a.data.year || a.data.name.localeCompare(b.data.name),
+);
+
+const norm = (m: string) => m.trim().toLowerCase();
+const tagsOf = (list?: string[]) => (list ?? []).map(norm);
+const unique = (key: 'mediums' | 'themes') =>
+	[...new Set(items.flatMap((item) => tagsOf(item.data[key])))].sort();
+
+// Each filter row: which frontmatter field it reads, and its label.
+const groups = [
+	{ key: 'mediums', label: 'Medium', values: unique('mediums') },
+	{ key: 'themes', label: 'Theme', values: unique('themes') },
+].filter((g) => g.values.length > 0);
+
+const pill = 'rounded-full bg-[rgb(var(--gray-light))] px-3 py-0.5 text-sm capitalize text-[rgb(var(--gray-dark))]';
+const themePill =
+	'rounded-full border border-[rgb(var(--gray-light))] px-3 py-0.5 text-sm capitalize text-[rgb(var(--gray))]';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Gallery | ${SITE_TITLE}`} description="A gallery of my artwork." />
+	</head>
+	<body>
+		<Header />
+		<main class="w-[1100px]! pt-6!">
+			<div class="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
+			<aside class="flex flex-col gap-5 md:sticky md:top-6 md:w-52 md:shrink-0">
+				<h1 class="font-title m-0! text-5xl font-bold">Gallery</h1>
+						{groups.map((group) => (
+							<div class="flex flex-wrap items-center gap-2" role="group" aria-label={`Filter by ${group.label.toLowerCase()}`}>
+								<span class="w-full text-sm font-bold tracking-widest text-[rgb(var(--gray))] uppercase">{group.label}</span>
+								{['all', ...group.values].map((v) => (
+									<button
+										type="button"
+										data-group={group.key}
+										data-filter={v}
+										aria-pressed={v === 'all' ? 'true' : 'false'}
+										class="cursor-pointer rounded-full border border-[rgb(var(--gray-light))] bg-white px-4 py-1 text-base capitalize text-[rgb(var(--gray-dark))] transition-colors hover:bg-[rgb(var(--gray-light))] aria-pressed:border-[rgb(var(--gray-dark))] aria-pressed:bg-[rgb(var(--gray-dark))] aria-pressed:text-white"
+									>
+										{v}
+									</button>
+								))}
+							</div>
+						))}
+			</aside>
+			<div class="min-w-0 flex-1">
+			<ul class="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6 p-0">
+				{
+					items.map((item) => (
+						<li data-item data-mediums={tagsOf(item.data.mediums).join(',')} data-themes={tagsOf(item.data.themes).join(',')}>
+							<button
+								type="button"
+								data-card
+								class="group block w-full cursor-pointer border-0 bg-transparent p-0 text-left font-[inherit] text-[rgb(var(--black))]"
+								data-name={item.data.name}
+								data-description={item.data.description}
+								data-year={item.data.year}
+								data-mediums={tagsOf(item.data.mediums).join(',')}
+								data-themes={tagsOf(item.data.themes).join(',')}
+							>
+								<Image
+									src={item.data.image}
+									width={720}
+									height={540}
+									alt={item.data.name}
+									class="aspect-[4/3] h-auto w-full rounded-xl object-cover transition-shadow duration-200 group-hover:shadow-[var(--box-shadow)] group-focus-visible:shadow-[var(--box-shadow)]"
+								/>
+								<span class="mt-2 block font-bold">{item.data.name}</span>
+								<span class="block text-[rgb(var(--gray))]">{item.data.year}</span>
+								{(tagsOf(item.data.mediums).length > 0 || tagsOf(item.data.themes).length > 0) && (
+									<span class="mt-1 flex flex-wrap gap-1">
+										{tagsOf(item.data.mediums).map((m) => (
+											<span class={pill}>{m}</span>
+										))}
+										{tagsOf(item.data.themes).map((t) => (
+											<span class={themePill}>{t}</span>
+										))}
+									</span>
+								)}
+							</button>
+							<template>
+								<Image
+									src={item.data.image}
+									width={1600}
+									alt={item.data.name}
+									class="block h-auto max-h-[72vh] w-auto max-w-full object-contain"
+									loading="eager"
+								/>
+							</template>
+						</li>
+					))
+				}
+			</ul>
+			<p id="no-results" hidden class="text-[rgb(var(--gray))]">No artworks match all of the selected filters.</p>
+			</div>
+			</div>
+		</main>
+		<dialog
+			id="viewer"
+			aria-labelledby="viewer-name"
+			class="m-auto max-h-[94vh] w-[min(94vw,1100px)] overflow-auto overscroll-contain rounded-none border-0 bg-[#f4f1ea] p-5 shadow-[var(--box-shadow)] backdrop:bg-black/80 md:p-10"
+		>
+			<button
+				type="button"
+				class="close absolute top-3 right-3 size-9 cursor-pointer rounded-full border-0 bg-transparent text-3xl leading-none text-[rgb(var(--gray-dark))] hover:bg-black/10"
+				aria-label="Close"
+			>&times;</button>
+			<div class="flex flex-col gap-8 md:flex-row md:items-end md:gap-10">
+				<!-- The artwork, mounted on a white mat like a framed piece. -->
+				<div class="viewer-image flex min-w-0 flex-1 justify-center bg-white p-3 shadow-[0_6px_24px_rgba(0,0,0,0.18)] md:p-5"></div>
+				<!-- The wall label (placard) beside the artwork. -->
+				<div class="border border-neutral-300 bg-white p-5 font-serif text-[rgb(var(--gray-dark))] shadow-sm md:w-64 md:shrink-0">
+					<p class="m-0 text-xs tracking-[0.25em] uppercase">{SITE_TITLE}</p>
+					<h2 id="viewer-name" class="mt-3! mb-0! font-serif text-2xl! font-normal italic"></h2>
+					<p class="viewer-year m-0 mt-1 text-base"></p>
+					<p class="viewer-mediums m-0 mt-3 text-sm capitalize"></p>
+					<hr class="my-4 border-0 border-t border-neutral-300" />
+					<p class="viewer-description m-0 text-sm leading-relaxed"></p>
+					<p class="viewer-themes m-0 mt-4 text-xs tracking-wide text-[rgb(var(--gray))] capitalize italic"></p>
+				</div>
+			</div>
+		</dialog>
+		<Footer />
+	</body>
+</html>
+
+
+<script>
+	const dialog = document.querySelector<HTMLDialogElement>('#viewer')!;
+	const imageBox = dialog.querySelector('.viewer-image')!;
+	const nameEl = dialog.querySelector('#viewer-name')!;
+	const yearEl = dialog.querySelector('.viewer-year')!;
+	const mediumsEl = dialog.querySelector<HTMLElement>('.viewer-mediums')!;
+	const themesEl = dialog.querySelector<HTMLElement>('.viewer-themes')!;
+	const descEl = dialog.querySelector('.viewer-description')!;
+
+	document.querySelectorAll<HTMLButtonElement>('[data-card]').forEach((card) => {
+		card.addEventListener('click', () => {
+			const template = card.parentElement!.querySelector('template')!;
+			imageBox.replaceChildren(template.content.cloneNode(true));
+			nameEl.textContent = card.dataset.name ?? '';
+			yearEl.textContent = card.dataset.year ?? '';
+			const fill = (el: HTMLElement, csv: string | undefined, prefix = '') => {
+				const text = (csv ?? '').split(',').filter(Boolean).join(', ');
+				el.textContent = text ? prefix + text : '';
+				el.hidden = !text;
+			};
+			fill(mediumsEl, card.dataset.mediums);
+			fill(themesEl, card.dataset.themes, 'Themes: ');
+			descEl.textContent = card.dataset.description ?? '';
+			dialog.showModal();
+			document.documentElement.classList.add('overflow-hidden');
+		});
+	});
+
+	dialog.addEventListener('close', () => document.documentElement.classList.remove('overflow-hidden'));
+	const filterButtons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+	const emptyMessage = document.querySelector<HTMLElement>('#no-results');
+	// Selected values for each filter row (mediums, themes).
+	const selected: Record<string, Set<string>> = {};
+
+	function applyFilter() {
+		filterButtons.forEach((b) => {
+			const chosen = selected[b.dataset.group!] ?? new Set();
+			const filter = b.dataset.filter!;
+			b.setAttribute('aria-pressed', String(filter === 'all' ? chosen.size === 0 : chosen.has(filter)));
+		});
+		let visible = 0;
+		document.querySelectorAll<HTMLElement>('[data-item]').forEach((li) => {
+			// An artwork must have every selected value, in every row, to be shown.
+			li.hidden = !Object.entries(selected).every(([group, chosen]) => {
+				const tags = (li.dataset[group] ?? '').split(',');
+				return [...chosen].every((value) => tags.includes(value));
+			});
+			if (!li.hidden) visible++;
+		});
+		if (emptyMessage) emptyMessage.hidden = visible > 0;
+	}
+
+	filterButtons.forEach((button) => {
+		button.addEventListener('click', () => {
+			const group = button.dataset.group!;
+			const filter = button.dataset.filter!;
+			const chosen = (selected[group] ??= new Set());
+			if (filter === 'all') chosen.clear();
+			else if (chosen.has(filter)) chosen.delete(filter);
+			else chosen.add(filter);
+			applyFilter();
+		});
+	});
+
+	dialog.querySelector('.close')!.addEventListener('click', () => dialog.close());
+	dialog.addEventListener('click', (e) => {
+		if (e.target === dialog) dialog.close();
+	});
+</script>
