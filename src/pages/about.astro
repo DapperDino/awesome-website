@@ -23,6 +23,8 @@ const { Content } = await render(entry);
 				<Image
 					src={photo}
 					alt={photoAlt}
+					loading="eager"
+					fetchpriority="high"
 					width={150}
 					height={150}
 					class="size-44 shrink-0 rounded-full! object-cover shadow-[var(--box-shadow)] ring-4 ring-white"

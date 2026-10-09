@@ -46,3 +46,16 @@ const { title, description, image = FallbackImage } = Astro.props;
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
+
+<script>
+	// Astro images are lazy by default. How many are on screen at load depends on the
+	// screen size, so switch any lazy image that is currently visible to eager loading.
+	function eagerLoadVisible() {
+		document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((img) => {
+			const { top, bottom } = img.getBoundingClientRect();
+			if (bottom > 0 && top < window.innerHeight) img.loading = 'eager';
+		});
+	}
+	eagerLoadVisible();
+	window.addEventListener('resize', eagerLoadVisible, { passive: true });
+</script>
