@@ -15,7 +15,7 @@ export default defineConfig({
   fonts: [
       {
           provider: fontProviders.google(),
-          name: 'Atkinson Hyperlegible',
+          name: 'Merriweather',
           cssVariable: '--font-atkinson',
           weights: [400, 700],
           styles: ['normal'],
