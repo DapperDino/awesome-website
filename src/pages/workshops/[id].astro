@@ -1,0 +1,14 @@
+---
+import { getCollection } from 'astro:content';
+import EventDetail from '../../components/EventDetail.astro';
+import { EVENT_TYPES } from '../../events';
+
+export async function getStaticPaths() {
+	const entries = await getCollection('workshops');
+	return entries.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+---
+
+<EventDetail type={EVENT_TYPES[2]} entry={entry} />

@@ -16,7 +16,7 @@ export default defineConfig({
       {
           provider: fontProviders.google(),
           name: 'Merriweather',
-          cssVariable: '--font-atkinson',
+          cssVariable: '--font-main',
           weights: [400, 700],
           styles: ['normal'],
           fallbacks: ['sans-serif'],

@@ -1,0 +1,60 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry, type CollectionEntry } from 'astro:content';
+import { withBase } from '../utils';
+
+interface Props {
+	item: CollectionEntry<'gallery'>;
+	showCollection?: boolean;
+}
+
+const { item, showCollection = true } = Astro.props;
+const collection = showCollection && item.data.collection ? await getEntry(item.data.collection) : undefined;
+
+const tagsOf = (list?: string[]) => (list ?? []).map((m) => m.trim().toLowerCase());
+const pill = 'rounded-full bg-[rgb(var(--gray-light))] px-3 py-0.5 text-sm capitalize text-[rgb(var(--gray-dark))]';
+const themePill =
+	'rounded-full border border-[rgb(var(--gray-light))] px-3 py-0.5 text-sm capitalize text-[rgb(var(--gray))]';
+---
+
+	<button
+		type="button"
+		data-card
+		class="group block w-full cursor-pointer border-0 bg-transparent p-0 text-left font-[inherit] text-[rgb(var(--black))]"
+		data-name={item.data.name}
+		data-description={item.data.description}
+		data-year={item.data.year}
+		data-mediums={tagsOf(item.data.mediums).join(',')}
+		data-themes={tagsOf(item.data.themes).join(',')}
+		data-collection-name={collection?.data.name}
+		data-collection-href={collection && withBase(`/gallery/collections/${collection.id}`)}
+	>
+		<Image
+			src={item.data.image}
+			width={720}
+			height={540}
+			alt={item.data.name}
+			class="aspect-[4/3] h-auto w-full rounded-xl object-cover transition-shadow duration-200 group-hover:shadow-[var(--box-shadow)] group-focus-visible:shadow-[var(--box-shadow)]"
+		/>
+		<span class="mt-2 block font-bold">{item.data.name}</span>
+		<span class="block text-[rgb(var(--gray))]">{item.data.year}</span>
+		{(tagsOf(item.data.mediums).length > 0 || tagsOf(item.data.themes).length > 0) && (
+			<span class="mt-1 flex flex-wrap gap-1">
+				{tagsOf(item.data.mediums).map((m) => (
+					<span class={pill}>{m}</span>
+				))}
+				{tagsOf(item.data.themes).map((t) => (
+					<span class={themePill}>{t}</span>
+				))}
+			</span>
+		)}
+	</button>
+	<template>
+		<Image
+			src={item.data.image}
+			width={1600}
+			alt={item.data.name}
+			class="block h-auto max-h-[72vh] w-auto max-w-full object-contain"
+			loading="eager"
+		/>
+	</template>

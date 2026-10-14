@@ -1,7 +1,11 @@
 ---
 import { SITE_TITLE } from '../consts';
+import { EVENT_TYPES } from '../events';
 import { withBase } from '../utils';
 import HeaderLink from './HeaderLink.astro';
+
+const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, '');
+const eventsActive = EVENT_TYPES.some((t) => pathname.startsWith(t.path) || pathname.startsWith(t.path.slice(1)));
 ---
 
 <header class="m-0 bg-white px-4 shadow-[0_2px_8px_rgba(var(--black),5%)]">
@@ -26,6 +30,29 @@ import HeaderLink from './HeaderLink.astro';
 		<div class="internal-links flex flex-col min-[721px]:flex-row">
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/gallery">Gallery</HeaderLink>
+			<div class="relative" data-dropdown>
+				<button
+					type="button"
+					aria-expanded="false"
+					aria-controls="events-menu"
+					class:list={[
+						'inline-flex cursor-pointer items-center gap-1 border-0 border-b-4 bg-transparent px-2 py-4 font-[inherit] text-[length:inherit] text-[rgb(var(--black))]',
+						eventsActive ? 'border-[var(--accent)] [font-weight:bolder]' : 'border-transparent',
+					]}
+				>
+					Events
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+				</button>
+				<ul
+					id="events-menu"
+					hidden
+					class="m-0 list-none p-0 pl-4 min-[721px]:absolute min-[721px]:top-full min-[721px]:left-0 min-[721px]:z-20 min-[721px]:min-w-44 min-[721px]:bg-white min-[721px]:p-2 min-[721px]:shadow-[0_8px_8px_rgba(var(--black),8%)]"
+				>
+					{EVENT_TYPES.map((t) => (
+						<li><HeaderLink href={t.path} class="block py-2!">{t.label}</HeaderLink></li>
+					))}
+				</ul>
+			</div>
 			<HeaderLink href="/about">About</HeaderLink>
 		</div>
 		<div class="flex">
@@ -60,6 +87,19 @@ import HeaderLink from './HeaderLink.astro';
 		menu.classList.toggle('flex', open);
 		toggle.setAttribute('aria-expanded', String(open));
 	}
+
+	const dropdown = document.querySelector<HTMLElement>('[data-dropdown]')!;
+	const dropdownButton = dropdown.querySelector('button')!;
+	const dropdownMenu = dropdown.querySelector<HTMLElement>('ul')!;
+
+	function setDropdown(open: boolean) {
+		dropdownMenu.hidden = !open;
+		dropdownButton.setAttribute('aria-expanded', String(open));
+	}
+
+	dropdownButton.addEventListener('click', () => setDropdown(dropdownMenu.hidden));
+	document.addEventListener('click', (e) => !dropdown.contains(e.target as Node) && setDropdown(false));
+	document.addEventListener('keydown', (e) => e.key === 'Escape' && setDropdown(false));
 
 	toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
 	document.addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));

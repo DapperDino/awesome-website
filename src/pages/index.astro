@@ -1,13 +1,24 @@
 ---
 import { Image } from 'astro:assets';
-import { getEntry } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { EVENT_TYPES, formatDateRange } from '../events';
 import { withBase } from '../utils';
 
 const { tiles } = (await getEntry('home', 'home'))!.data;
+
+// The most recent events across exhibitions, residencies and workshops.
+const latest = (
+	await Promise.all(
+		EVENT_TYPES.map(async (type) => (await getCollection(type.collection)).map((entry) => ({ type, entry }))),
+	)
+)
+	.flat()
+	.sort((a, b) => b.entry.data.startDate.getTime() - a.entry.data.startDate.getTime())
+	.slice(0, 3);
 ---
 
 <!doctype html>
@@ -38,6 +49,38 @@ const { tiles } = (await getEntry('home', 'home'))!.data;
 					))
 				}
 			</div>
+			{
+				latest.length > 0 && (
+					<section class="mx-auto mt-12 max-w-[1100px]">
+						<h2 class="font-title mb-6! text-4xl! font-bold">Latest events</h2>
+						<ul class="m-0 grid list-none grid-cols-1 gap-8 p-0 sm:grid-cols-3">
+							{latest.map(({ type, entry }) => (
+								<li>
+									<a
+										href={withBase(`${type.path}/${entry.id}`)}
+										class="group block text-[rgb(var(--black))] no-underline"
+									>
+										<Image
+											src={entry.data.image}
+											width={720}
+											height={540}
+											alt={entry.data.imageAlt ?? entry.data.title}
+											class="aspect-[4/3] h-auto w-full rounded-xl object-cover transition-shadow duration-200 group-hover:shadow-[var(--box-shadow)] group-focus-visible:shadow-[var(--box-shadow)]"
+										/>
+										<span class="mt-3 block text-sm font-bold tracking-widest text-[rgb(var(--gray))] uppercase">
+											{type.label.replace(/ies$/, 'y').replace(/s$/, '')}
+										</span>
+										<span class="block text-xl font-bold">{entry.data.title}</span>
+										<span class="block text-[rgb(var(--gray))]">
+											{formatDateRange(entry.data.startDate, entry.data.endDate)} · {entry.data.location}
+										</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
+				)
+			}
 		</main>
 		<Footer />
 	</body>

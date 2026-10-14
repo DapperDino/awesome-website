@@ -1,0 +1,63 @@
+---
+import { Image } from 'astro:assets';
+import { render, type CollectionEntry } from 'astro:content';
+import BaseHead from './BaseHead.astro';
+import Footer from './Footer.astro';
+import Header from './Header.astro';
+import { SITE_TITLE } from '../consts';
+import { formatDateRange, type EventType } from '../events';
+import { withBase } from '../utils';
+
+interface Props {
+	type: EventType;
+	entry: CollectionEntry<'exhibitions' | 'residencies' | 'workshops'>;
+}
+
+const { type, entry } = Astro.props;
+const { title, summary, startDate, endDate, location, image, imageAlt, link } = entry.data;
+const { Content } = await render(entry);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`${title} | ${SITE_TITLE}`} description={summary} image={image} />
+	</head>
+	<body>
+		<Header />
+		<main class="w-[960px]! py-12!">
+			<a href={withBase(type.path)} class="text-base">&larr; {type.label}</a>
+			<article class="mt-6 flex flex-col gap-8 md:flex-row md:items-start md:gap-12">
+				<Image
+					src={image}
+					alt={imageAlt ?? title}
+					loading="eager"
+					fetchpriority="high"
+					width={960}
+					class="h-auto w-full rounded-xl shadow-[var(--box-shadow)] md:w-1/2"
+				/>
+				<div class="min-w-0 flex-1">
+					<h1 class="font-title mt-0 mb-3 text-5xl font-bold">{title}</h1>
+					<p class="m-0 font-bold">{formatDateRange(startDate, endDate)}</p>
+					<p class="m-0 mb-6 text-[rgb(var(--gray))]">{location}</p>
+					<div class="[&>p]:m-0 [&>p]:mb-4 [&>p:last-child]:mb-0">
+						<Content />
+					</div>
+					{
+						link && (
+							<a
+								href={link.url}
+								target="_blank"
+								rel="noopener"
+								class="mt-6 inline-block rounded-full bg-[var(--accent)] px-6 py-2 font-bold text-white! no-underline hover:bg-[var(--accent-dark)]"
+							>
+								{link.label}
+							</a>
+						)
+					}
+				</div>
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>

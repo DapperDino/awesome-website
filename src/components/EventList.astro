@@ -1,0 +1,65 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseHead from './BaseHead.astro';
+import Footer from './Footer.astro';
+import Header from './Header.astro';
+import { SITE_TITLE } from '../consts';
+import { formatDateRange, type EventType } from '../events';
+import { withBase } from '../utils';
+
+interface Props {
+	type: EventType;
+}
+
+const { type } = Astro.props;
+// Newest first.
+const entries = (await getCollection(type.collection)).sort(
+	(a, b) => b.data.startDate.getTime() - a.data.startDate.getTime(),
+);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`${type.label} | ${SITE_TITLE}`} description={type.blurb} />
+	</head>
+	<body>
+		<Header />
+		<main class="w-[1100px]! pt-6!">
+			<h1 class="font-title mb-2! text-5xl font-bold">{type.label}</h1>
+			<p class="mt-0 mb-8 text-[rgb(var(--gray))]">{type.blurb}</p>
+			{
+				entries.length === 0 ? (
+					<p class="text-[rgb(var(--gray))]">Nothing to show here yet, check back soon.</p>
+				) : (
+					<ul class="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-8 p-0">
+						{entries.map((entry) => (
+							<li>
+								<a
+									href={withBase(`${type.path}/${entry.id}`)}
+									class="group block text-[rgb(var(--black))] no-underline"
+								>
+									<Image
+										src={entry.data.image}
+										width={720}
+										height={540}
+										alt={entry.data.imageAlt ?? entry.data.title}
+										class="aspect-[4/3] h-auto w-full rounded-xl object-cover transition-shadow duration-200 group-hover:shadow-[var(--box-shadow)] group-focus-visible:shadow-[var(--box-shadow)]"
+									/>
+									<span class="mt-3 block text-xl font-bold">{entry.data.title}</span>
+									<span class="block text-[rgb(var(--gray))]">
+										{formatDateRange(entry.data.startDate, entry.data.endDate)}
+									</span>
+									<span class="block text-[rgb(var(--gray))]">{entry.data.location}</span>
+									<span class="mt-1 block text-base text-[rgb(var(--gray-dark))]">{entry.data.summary}</span>
+								</a>
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</main>
+		<Footer />
+	</body>
+</html>
