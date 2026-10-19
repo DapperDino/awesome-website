@@ -24,7 +24,7 @@ const singular = (label: string) => label.replace(/ies$/, 'y').replace(/s$/, '')
 
 const aboutEntry = (await getEntry('about', 'about'))!;
 const about = aboutEntry.data;
-const aboutBlurb = aboutEntry.body?.trim().split('\n\n')[0] ?? '';
+const aboutBlurb = aboutEntry.body?.trim().split(/\r?\n[ \t]*\r?\n/)[0] ?? '';
 
 const recentWork = (await getCollection('gallery'))
 	.sort((a, b) => b.data.year - a.data.year)
