@@ -95,7 +95,7 @@ const { slides, class: className } = Astro.props;
 			window.clearInterval(timer);
 			timer = window.setInterval(() => show(current + 1), Number(root.dataset.interval));
 		};
-		// Manual navigation restarts the 5 second countdown.
+
 		const go = (index: number) => {
 			show(index);
 			start();

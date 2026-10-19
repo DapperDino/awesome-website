@@ -10,7 +10,6 @@ import { withBase } from '../utils';
 
 const { tiles } = (await getEntry('home', 'home'))!.data;
 
-// The most recent events across exhibitions, residencies and workshops.
 const latest = (
 	await Promise.all(
 		EVENT_TYPES.map(async (type) => (await getCollection(type.collection)).map((entry) => ({ type, entry }))),
@@ -19,6 +18,17 @@ const latest = (
 	.flat()
 	.sort((a, b) => b.entry.data.startDate.getTime() - a.entry.data.startDate.getTime())
 	.slice(0, 3);
+const [featured, ...more] = latest;
+
+const singular = (label: string) => label.replace(/ies$/, 'y').replace(/s$/, '');
+
+const aboutEntry = (await getEntry('about', 'about'))!;
+const about = aboutEntry.data;
+const aboutBlurb = aboutEntry.body?.trim().split('\n\n')[0] ?? '';
+
+const recentWork = (await getCollection('gallery'))
+	.sort((a, b) => b.data.year - a.data.year)
+	.slice(0, 6);
 ---
 
 <!doctype html>
@@ -32,7 +42,7 @@ const latest = (
 			<div class="grid grid-cols-3 gap-4">
 				{
 					tiles.map((tile) => (
-						<a href={withBase('/gallery')} class="group @container relative block overflow-hidden rounded-xl">
+						<a href={withBase(tile.link)} class="group @container relative block overflow-hidden rounded-xl">
 							<Image
 								src={tile.image}
 								width={640}
@@ -49,35 +59,105 @@ const latest = (
 					))
 				}
 			</div>
+			<section class="mx-auto mt-16 flex max-w-[1100px] flex-col items-center gap-6 rounded-2xl bg-[rgb(var(--gray-light))]/60 p-6 text-center md:flex-row md:gap-10 md:p-10 md:text-left">
+				<Image
+					src={about.photo}
+					width={150}
+					height={150}
+					alt={about.photoAlt}
+					class="size-36 shrink-0 rounded-full! object-cover shadow-[var(--box-shadow)] ring-4 ring-white"
+				/>
+				<div>
+					<h2 class="font-title mt-0! mb-3! text-4xl! font-bold">{about.heading}</h2>
+					<p class="m-0 mb-6 text-lg">{aboutBlurb}</p>
+					<a
+						href={withBase('/about')}
+						class="inline-block rounded-full bg-[rgb(var(--gray-dark))] px-6 py-2 font-bold text-white! no-underline hover:bg-[rgb(var(--black))]"
+					>
+						More about Katie
+					</a>
+				</div>
+			</section>
 			{
-				latest.length > 0 && (
-					<section class="mx-auto mt-12 max-w-[1100px]">
-						<h2 class="font-title mb-6! text-4xl! font-bold">Latest events</h2>
-						<ul class="m-0 grid list-none grid-cols-1 gap-8 p-0 sm:grid-cols-3">
-							{latest.map(({ type, entry }) => (
+				recentWork.length > 0 && (
+					<section class="mx-auto mt-16 max-w-[1100px]">
+						<div class="mb-6 flex items-end justify-between gap-4">
+							<h2 class="font-title m-0! text-4xl! font-bold">Recent work</h2>
+							<a href={withBase('/gallery')} class="font-bold whitespace-nowrap">View the gallery &rarr;</a>
+						</div>
+						<ul class="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 md:grid-cols-6">
+							{recentWork.map((piece) => (
 								<li>
-									<a
-										href={withBase(`${type.path}/${entry.id}`)}
-										class="group block text-[rgb(var(--black))] no-underline"
-									>
+									<a href={withBase(`/gallery#artwork-${piece.id}`)} class="group block overflow-hidden rounded-lg" title={piece.data.name}>
 										<Image
-											src={entry.data.image}
-											width={720}
-											height={540}
-											alt={entry.data.imageAlt ?? entry.data.title}
-											class="aspect-[4/3] h-auto w-full rounded-xl object-cover transition-shadow duration-200 group-hover:shadow-[var(--box-shadow)] group-focus-visible:shadow-[var(--box-shadow)]"
+											src={piece.data.image}
+											width={300}
+											height={300}
+											alt={piece.data.name}
+											class="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-110"
 										/>
-										<span class="mt-3 block text-sm font-bold tracking-widest text-[rgb(var(--gray))] uppercase">
-											{type.label.replace(/ies$/, 'y').replace(/s$/, '')}
-										</span>
-										<span class="block text-xl font-bold">{entry.data.title}</span>
-										<span class="block text-[rgb(var(--gray))]">
-											{formatDateRange(entry.data.startDate, entry.data.endDate)} · {entry.data.location}
-										</span>
 									</a>
 								</li>
 							))}
 						</ul>
+					</section>
+				)
+			}
+			{
+				featured && (
+					<section class="mx-auto mt-16 max-w-[1100px]">
+						<h2 class="font-title mt-1! mb-6! text-4xl! font-bold">Latest events</h2>
+						<a
+							href={withBase(`${featured.type.path}/${featured.entry.id}`)}
+							class="group grid overflow-hidden rounded-2xl bg-white text-[rgb(var(--black))]! no-underline shadow-[var(--box-shadow)] md:grid-cols-5"
+						>
+							<Image
+								src={featured.entry.data.image}
+								width={900}
+								height={675}
+								alt={featured.entry.data.imageAlt ?? featured.entry.data.title}
+								class="aspect-[4/3] h-full w-full object-cover md:col-span-3 md:aspect-auto"
+							/>
+							<span class="flex flex-col justify-center gap-2 p-6 md:col-span-2 md:p-10">
+								<span class="text-sm font-bold tracking-widest text-[rgb(var(--gray))] uppercase">
+									{singular(featured.type.label)}
+								</span>
+								<span class="font-title text-3xl leading-tight font-bold text-[var(--accent)]">{featured.entry.data.title}</span>
+								<span class="font-bold">{formatDateRange(featured.entry.data.startDate, featured.entry.data.endDate)}</span>
+								<span class="text-[rgb(var(--gray))]">{featured.entry.data.location}</span>
+								<span class="mt-2">{featured.entry.data.summary}</span>
+								<span class="mt-4 font-bold text-[var(--accent-dark)] group-hover:underline">Read more &rarr;</span>
+							</span>
+						</a>
+						{more.length > 0 && (
+							<ul class="m-0 mt-6 grid list-none grid-cols-1 gap-6 p-0 sm:grid-cols-2">
+								{more.map(({ type, entry }) => (
+									<li>
+										<a
+											href={withBase(`${type.path}/${entry.id}`)}
+											class="group flex items-center gap-4 rounded-xl p-3 text-[rgb(var(--black))]! no-underline transition-shadow hover:shadow-[var(--box-shadow)]"
+										>
+											<Image
+												src={entry.data.image}
+												width={240}
+												height={240}
+												alt={entry.data.imageAlt ?? entry.data.title}
+												class="size-24 shrink-0 rounded-lg object-cover"
+											/>
+											<span>
+												<span class="block text-xs font-bold tracking-widest text-[rgb(var(--gray))] uppercase">
+													{singular(type.label)}
+												</span>
+												<span class="block text-lg leading-snug font-bold text-[var(--accent)]">{entry.data.title}</span>
+												<span class="block text-sm text-[rgb(var(--gray))]">
+													{formatDateRange(entry.data.startDate, entry.data.endDate)}
+												</span>
+											</span>
+										</a>
+									</li>
+								))}
+							</ul>
+						)}
 					</section>
 				)
 			}

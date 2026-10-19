@@ -1,6 +1,4 @@
 ---
-// Import the global.css file here so that it is included on
-// all pages through the use of the <BaseHead /> component.
 import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import FallbackImage from '../assets/blog-placeholder-1.jpg';
@@ -48,8 +46,6 @@ const { title, description, image = FallbackImage } = Astro.props;
 <meta name="twitter:card" content="summary_large_image" />
 
 <script>
-	// Astro images are lazy by default. How many are on screen at load depends on the
-	// screen size, so switch any lazy image that is currently visible to eager loading.
 	function eagerLoadVisible() {
 		document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((img) => {
 			const { top, bottom } = img.getBoundingClientRect();

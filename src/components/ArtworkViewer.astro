@@ -63,6 +63,13 @@ import { SITE_TITLE } from '../consts';
 		});
 	});
 
+	const openFromHash = () => {
+		if (!location.hash.startsWith('#artwork-') || dialog.open) return;
+		document.getElementById(decodeURIComponent(location.hash.slice(1)))?.click();
+	};
+	openFromHash();
+	window.addEventListener('hashchange', openFromHash);
+
 	dialog.addEventListener('close', () => document.documentElement.classList.remove('overflow-hidden'));
 	dialog.querySelector('.close')!.addEventListener('click', () => dialog.close());
 	dialog.addEventListener('click', (e) => {

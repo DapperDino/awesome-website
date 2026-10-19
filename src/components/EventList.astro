@@ -13,7 +13,7 @@ interface Props {
 }
 
 const { type } = Astro.props;
-// Newest first.
+
 const entries = (await getCollection(type.collection)).sort(
 	(a, b) => b.data.startDate.getTime() - a.data.startDate.getTime(),
 );

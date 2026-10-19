@@ -103,6 +103,6 @@ const eventsActive = EVENT_TYPES.some((t) => pathname.startsWith(t.path) || path
 
 	toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
 	document.addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
-	// Reset when growing to desktop so the menu isn't left in an open state.
+
 	window.matchMedia('(min-width: 721px)').addEventListener('change', (e) => e.matches && setOpen(false));
 </script>

@@ -21,7 +21,6 @@ const tagsOf = (list?: string[]) => (list ?? []).map(norm);
 const unique = (key: 'mediums' | 'themes') =>
 	[...new Set(items.flatMap((item) => tagsOf(item.data[key])))].sort();
 
-// Each filter row: which frontmatter field it reads, and its label.
 const groups = [
 	{ key: 'mediums', label: 'Medium', values: unique('mediums') },
 	{ key: 'themes', label: 'Theme', values: unique('themes') },
@@ -73,7 +72,7 @@ const groups = [
 					</section>
 				)
 			}
-			<h2 class="mb-4! text-sm! font-bold tracking-widest text-[rgb(var(--gray))] uppercase">All pieces</h2>
+			<h2 id="all-pieces" class="mb-4! scroll-mt-6 text-sm! font-bold tracking-widest text-[rgb(var(--gray))] uppercase">All pieces</h2>
 			<div class="flex flex-col gap-6 md:flex-row md:items-start md:gap-10">
 			<aside class="flex flex-col gap-5 md:sticky md:top-6 md:w-52 md:shrink-0">
 						{groups.map((group) => (
@@ -116,7 +115,6 @@ const groups = [
 <script>
 	const filterButtons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
 	const emptyMessage = document.querySelector<HTMLElement>('#no-results');
-	// Selected values for each filter row (mediums, themes).
 	const selected: Record<string, Set<string>> = {};
 
 	function applyFilter() {
@@ -127,7 +125,6 @@ const groups = [
 		});
 		let visible = 0;
 		document.querySelectorAll<HTMLElement>('[data-item]').forEach((li) => {
-			// An artwork must have every selected value, in every row, to be shown.
 			li.hidden = !Object.entries(selected).every(([group, chosen]) => {
 				const tags = (li.dataset[group] ?? '').split(',');
 				return [...chosen].every((value) => tags.includes(value));
@@ -135,6 +132,17 @@ const groups = [
 			if (!li.hidden) visible++;
 		});
 		if (emptyMessage) emptyMessage.hidden = visible > 0;
+	}
+
+	const params = new URLSearchParams(location.search);
+	filterButtons.forEach((b) => {
+		const group = b.dataset.group!;
+		const wanted = (params.get(group) ?? '').toLowerCase().split(',');
+		if (wanted.includes(b.dataset.filter!)) (selected[group] ??= new Set()).add(b.dataset.filter!);
+	});
+	applyFilter();
+	if (Object.values(selected).some((chosen) => chosen.size > 0) && !location.hash) {
+		document.getElementById('all-pieces')?.scrollIntoView();
 	}
 
 	filterButtons.forEach((button) => {

@@ -16,19 +16,24 @@ const home = defineCollection({
 	loader: glob({ base: './src/content/home', pattern: '**/*.md' }),
 	schema: ({ image }) =>
 		z.object({
-			tiles: z.array(z.object({ label: z.string(), image: image() })).min(1),
+			tiles: z
+				.array(
+					z.object({
+						label: z.string(),
+						image: image(),
+						link: z.string(),
+					}),
+				)
+				.min(1),
 		}),
 });
 
-// A named group of gallery pieces, with its own page that can be written about in the markdown body.
 const galleryCollections = defineCollection({
 	loader: glob({ base: './src/content/collections', pattern: '**/*.md' }),
 	schema: ({ image }) =>
 		z.object({
 			name: z.string(),
-			// One-line teaser shown on the gallery page.
 			summary: z.string(),
-			// Cover image for the gallery banner and the collection page.
 			image: image(),
 			imageAlt: z.string().optional(),
 		}),
@@ -44,7 +49,6 @@ const gallery = defineCollection({
 			mediums: z.array(z.string()).default([]),
 			themes: z.array(z.string()).default([]),
 			image: image(),
-			// Optional: the collection (see src/content/collections) this piece belongs to.
 			collection: reference('collections').optional(),
 		}),
 });
