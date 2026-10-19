@@ -1,7 +1,7 @@
 ---
-import { Image } from 'astro:assets';
 import { render, type CollectionEntry } from 'astro:content';
 import BaseHead from './BaseHead.astro';
+import EventCarousel from './EventCarousel.astro';
 import Footer from './Footer.astro';
 import Header from './Header.astro';
 import { SITE_TITLE } from '../consts';
@@ -14,7 +14,11 @@ interface Props {
 }
 
 const { type, entry } = Astro.props;
-const { title, summary, startDate, endDate, location, image, imageAlt, link } = entry.data;
+const { title, summary, startDate, endDate, location, image, imageAlt, moreImages, link } = entry.data;
+const slides = [
+	{ src: image, alt: imageAlt ?? title },
+	...moreImages.map((m) => ({ src: m.src, alt: m.alt ?? title })),
+];
 const { Content } = await render(entry);
 ---
 
@@ -27,35 +31,30 @@ const { Content } = await render(entry);
 		<Header />
 		<main class="w-[960px]! py-12!">
 			<a href={withBase(type.path)} class="text-base">&larr; {type.label}</a>
-			<article class="mt-6 flex flex-col gap-8 md:flex-row md:items-start md:gap-12">
-				<Image
-					src={image}
-					alt={imageAlt ?? title}
-					loading="eager"
-					fetchpriority="high"
-					width={960}
-					class="h-auto w-full rounded-xl shadow-[var(--box-shadow)] md:w-1/2"
-				/>
-				<div class="min-w-0 flex-1">
-					<h1 class="font-title mt-0 mb-3 text-5xl font-bold">{title}</h1>
-					<p class="m-0 font-bold">{formatDateRange(startDate, endDate)}</p>
-					<p class="m-0 mb-6 text-[rgb(var(--gray))]">{location}</p>
-					<div class="[&>p]:m-0 [&>p]:mb-4 [&>p:last-child]:mb-0">
-						<Content />
+			<article class="mt-6">
+				<div class="flex flex-col gap-8 md:flex-row md:items-start md:gap-12">
+					<EventCarousel slides={slides} class="w-full md:w-1/2" />
+					<div class="min-w-0 flex-1">
+						<h1 class="font-title mt-0 mb-3 text-5xl font-bold">{title}</h1>
+						<p class="m-0 font-bold">{formatDateRange(startDate, endDate)}</p>
+						<p class="m-0 text-[rgb(var(--gray))]">{location}</p>
 					</div>
-					{
-						link && (
-							<a
-								href={link.url}
-								target="_blank"
-								rel="noopener"
-								class="mt-6 inline-block rounded-full bg-[var(--accent)] px-6 py-2 font-bold text-white! no-underline hover:bg-[var(--accent-dark)]"
-							>
-								{link.label}
-							</a>
-						)
-					}
 				</div>
+				<div class="mt-8 [&>p]:m-0 [&>p]:mb-4 [&>p:last-child]:mb-0">
+					<Content />
+				</div>
+				{
+					link && (
+						<a
+							href={link.url}
+							target="_blank"
+							rel="noopener"
+							class="mt-6 inline-block rounded-full bg-[var(--accent)] px-6 py-2 font-bold text-white! no-underline hover:bg-[var(--accent-dark)]"
+						>
+							{link.label}
+						</a>
+					)
+				}
 			</article>
 		</main>
 		<Footer />

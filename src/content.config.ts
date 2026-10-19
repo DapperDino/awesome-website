@@ -61,6 +61,7 @@ const eventCollection = (dir: string) =>
 				location: z.string(),
 				image: image(),
 				imageAlt: z.string().optional(),
+				moreImages: z.array(z.object({ src: image(), alt: z.string().optional() })).default([]),
 				link: z.object({ label: z.string(), url: z.string().url() }).optional(),
 			}),
 	});

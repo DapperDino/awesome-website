@@ -5,6 +5,9 @@ startDate: 2023-10-28
 endDate: 2023-11-11
 location: "Fishergate Point Studios, Nottingham"
 image: ../../assets/events/exhibitions/fruit-baskets-oct-2023/fruit-baskets-view-of-main-room.jpg
+moreImages:
+  - src: ../../assets/events/exhibitions/fruit-baskets-oct-2023/fruit-basket-costumes-in-basket.jpg
+  - src: ../../assets/events/exhibitions/fruit-baskets-oct-2023/walk-queerly-all-pieces-edit.png
 ---
 **Exhibition Information**
 
@@ -17,5 +20,5 @@ In their inaugural exhibition at Fishergate Point Studios, The Fruit Baskets we 
 This exhibition is in collaboration with Seraphic Sounds. 
 Optional ticket booking profits for launch night went to the charity Mermaids UK, a trans and non-binary youth support centre. 
 
-@weareconnectioncollective | Fishergate Point Studios, 3 Fisher Gate, Nottingham NG1 1GD
+[@weareconnectioncollective](https://www.instagram.com/weareconnectioncollective/) | Fishergate Point Studios, 3 Fisher Gate, Nottingham NG1 1GD
 

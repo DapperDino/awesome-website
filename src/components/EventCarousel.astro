@@ -1,0 +1,110 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+	slides: { src: ImageMetadata; alt: string }[];
+	class?: string;
+}
+
+const { slides, class: className } = Astro.props;
+---
+
+<div class:list={['event-carousel', className]} data-interval="5000">
+	<div class="relative overflow-hidden rounded-xl shadow-[var(--box-shadow)]">
+		{
+			slides.map((slide, i) => (
+				<div
+					data-slide
+					aria-hidden={i === 0 ? undefined : 'true'}
+					class:list={[
+						'block w-full transition-opacity duration-500',
+						i === 0 ? 'relative opacity-100' : 'pointer-events-none absolute inset-0 opacity-0',
+					]}
+				>
+					<Image
+						src={slide.src}
+						alt={slide.alt}
+						width={960}
+						loading={i === 0 ? 'eager' : 'lazy'}
+						fetchpriority={i === 0 ? 'high' : undefined}
+						class="m-0 block h-full w-full object-cover"
+					/>
+				</div>
+			))
+		}
+		{
+			slides.length > 1 && (
+				<>
+					<button
+						type="button"
+						data-prev
+						aria-label="Previous image"
+						class="absolute top-1/2 left-2 flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-black/50 p-0 text-2xl leading-none text-white hover:bg-black/70"
+					>
+						&#8249;
+					</button>
+					<button
+						type="button"
+						data-next
+						aria-label="Next image"
+						class="absolute top-1/2 right-2 flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-0 bg-black/50 p-0 text-2xl leading-none text-white hover:bg-black/70"
+					>
+						&#8250;
+					</button>
+				</>
+			)
+		}
+	</div>
+	{
+		slides.length > 1 && (
+			<div class="mt-3 flex justify-center gap-2">
+				{slides.map((_, i) => (
+					<button
+						type="button"
+						data-dot
+						aria-label={`Show image ${i + 1}`}
+						class="size-2.5 cursor-pointer rounded-full border-0 bg-[rgb(var(--gray))] p-0 opacity-40 aria-[current=true]:bg-[var(--accent)] aria-[current=true]:opacity-100"
+					/>
+				))}
+			</div>
+		)
+	}
+</div>
+
+<script>
+	document.querySelectorAll<HTMLElement>('.event-carousel').forEach((root) => {
+		const slides = [...root.querySelectorAll<HTMLElement>('[data-slide]')];
+		const dots = [...root.querySelectorAll<HTMLElement>('[data-dot]')];
+		if (slides.length < 2) return;
+
+		let current = 0;
+		let timer: number | undefined;
+
+		const show = (index: number) => {
+			current = (index + slides.length) % slides.length;
+			slides.forEach((slide, i) => {
+				slide.classList.toggle('opacity-100', i === current);
+				slide.classList.toggle('opacity-0', i !== current);
+				slide.setAttribute('aria-hidden', String(i !== current));
+				slide.classList.toggle('pointer-events-none', i !== current);
+			});
+			dots.forEach((dot, i) => dot.setAttribute('aria-current', String(i === current)));
+		};
+		const start = () => {
+			window.clearInterval(timer);
+			timer = window.setInterval(() => show(current + 1), Number(root.dataset.interval));
+		};
+		// Manual navigation restarts the 5 second countdown.
+		const go = (index: number) => {
+			show(index);
+			start();
+		};
+
+		root.querySelector('[data-prev]')?.addEventListener('click', () => go(current - 1));
+		root.querySelector('[data-next]')?.addEventListener('click', () => go(current + 1));
+		dots.forEach((dot, i) => dot.addEventListener('click', () => go(i)));
+		show(0);
+		start();
+	});
+</script>
