@@ -96,6 +96,8 @@ img {
 	max-width: 100%;
 	height: auto;
 	border-radius: 8px;
+	color: transparent;
+	background-color: rgb(var(--gray-light));
 }
 code {
 	padding: 2px 5px;

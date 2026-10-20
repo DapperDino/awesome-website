@@ -1,0 +1,152 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { withBase } from '../utils';
+
+interface Props {
+	collections: CollectionEntry<'collections'>[];
+	counts: Record<string, number>;
+}
+
+const { collections, counts } = Astro.props;
+---
+
+<div class="collection-carousel relative" role="region" aria-roledescription="carousel" aria-label="Collections">
+	<div class="overflow-hidden rounded-2xl">
+		<ul data-track class="m-0 flex list-none gap-6 p-0">
+			{
+				collections.map((c) => (
+					<li data-card class="min-w-0 shrink-0 grow-0">
+						<a
+							href={withBase(`/gallery/collections/${c.id}`)}
+							class="group block h-full overflow-hidden rounded-2xl bg-[rgb(var(--gray-dark))] text-white! no-underline"
+						>
+							<div class="overflow-hidden">
+								<Image
+									src={c.data.image}
+									width={720}
+									height={540}
+									alt={c.data.imageAlt ?? c.data.name}
+									class="aspect-[4/3] h-auto w-full rounded-none! object-cover transition-transform duration-300 group-hover:scale-105"
+								/>
+							</div>
+							<div class="px-4 py-3">
+								<span class="block font-title text-xl leading-tight font-bold">{c.data.name}</span>
+								<span class="mt-0.5 block text-sm text-white/90">{c.data.summary}</span>
+								<span class="mt-1 block text-xs font-bold tracking-widest text-white/80 uppercase">
+									{counts[c.id] ?? 0} {(counts[c.id] ?? 0) === 1 ? 'piece' : 'pieces'} &rarr;
+								</span>
+							</div>
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+	{
+		collections.length > 1 && (
+			<>
+				<button
+					type="button"
+					data-prev
+					aria-label="Previous collections"
+					class="absolute top-1/2 -translate-y-1/2 left-2 xl:-left-14 z-10 flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-black/60 p-0 text-2xl leading-none text-white shadow-[var(--box-shadow)] hover:bg-black/80"
+				>
+					&#8249;
+				</button>
+				<button
+					type="button"
+					data-next
+					aria-label="Next collections"
+					class="absolute top-1/2 -translate-y-1/2 right-2 xl:-right-14 z-10 flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-black/60 p-0 text-2xl leading-none text-white shadow-[var(--box-shadow)] hover:bg-black/80"
+				>
+					&#8250;
+				</button>
+			</>
+		)
+	}
+</div>
+
+<style>
+	.collection-carousel {
+		--per: 1;
+		--gap: 1.5rem;
+	}
+	@media (min-width: 640px) {
+		.collection-carousel {
+			--per: 2;
+		}
+	}
+	@media (min-width: 1024px) {
+		.collection-carousel {
+			--per: 3;
+		}
+	}
+	[data-card] {
+		flex-basis: calc((100% - (var(--per) - 1) * var(--gap)) / var(--per));
+	}
+</style>
+
+<script>
+	document.querySelectorAll<HTMLElement>('.collection-carousel').forEach((root) => {
+		const track = root.querySelector<HTMLElement>('[data-track]')!;
+		const prev = root.querySelector<HTMLElement>('[data-prev]');
+		const next = root.querySelector<HTMLElement>('[data-next]');
+		const duration = 400;
+		let busy = false;
+
+		const perView = () => Number(getComputedStyle(root).getPropertyValue('--per')) || 1;
+		const step = () => {
+			const card = track.firstElementChild as HTMLElement;
+			return card.offsetWidth + parseFloat(getComputedStyle(track).columnGap || '0');
+		};
+
+		const refresh = () => {
+			const per = perView();
+			const cards = [...track.children] as HTMLElement[];
+			cards.forEach((card, i) => {
+				const hidden = i >= per;
+				card.toggleAttribute('inert', hidden);
+				card.setAttribute('aria-hidden', String(hidden));
+			});
+			const scrollable = cards.length > per;
+			prev?.toggleAttribute('hidden', !scrollable);
+			next?.toggleAttribute('hidden', !scrollable);
+		};
+
+		const animate = (from: number, to: number, done: () => void) => {
+			track.style.transition = 'none';
+			track.style.transform = `translateX(${from}px)`;
+			track.getBoundingClientRect();
+			track.style.transition = `transform ${duration}ms ease`;
+			track.style.transform = `translateX(${to}px)`;
+			window.setTimeout(() => {
+				track.style.transition = 'none';
+				done();
+				busy = false;
+			}, duration);
+		};
+
+		const go = (dir: 1 | -1) => {
+			if (busy) return;
+			busy = true;
+			const d = step();
+			track.querySelectorAll('[data-card]').forEach((c) => c.removeAttribute('inert'));
+			if (dir === 1) {
+				animate(0, -d, () => {
+					track.append(track.firstElementChild!);
+					track.style.transform = 'translateX(0)';
+					refresh();
+				});
+			} else {
+				track.prepend(track.lastElementChild!);
+				animate(-d, 0, refresh);
+			}
+		};
+
+		next?.addEventListener('click', () => go(1));
+		prev?.addEventListener('click', () => go(-1));
+		window.addEventListener('resize', refresh);
+		refresh();
+	});
+</script>

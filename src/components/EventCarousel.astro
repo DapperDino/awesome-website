@@ -11,15 +11,15 @@ const { slides, class: className } = Astro.props;
 ---
 
 <div class:list={['event-carousel', className]} data-interval="5000">
-	<div class="relative overflow-hidden rounded-xl shadow-[var(--box-shadow)]">
+	<div class="relative aspect-[4/3] overflow-hidden rounded-xl bg-[rgb(var(--gray-light))] shadow-[var(--box-shadow)]">
 		{
 			slides.map((slide, i) => (
 				<div
 					data-slide
 					aria-hidden={i === 0 ? undefined : 'true'}
 					class:list={[
-						'block w-full transition-opacity duration-500',
-						i === 0 ? 'relative opacity-100' : 'pointer-events-none absolute inset-0 opacity-0',
+						'absolute inset-0 transition-opacity duration-500',
+						i === 0 ? 'opacity-100' : 'pointer-events-none opacity-0',
 					]}
 				>
 					<Image
@@ -28,7 +28,7 @@ const { slides, class: className } = Astro.props;
 						width={960}
 						loading={i === 0 ? 'eager' : 'lazy'}
 						fetchpriority={i === 0 ? 'high' : undefined}
-						class="m-0 block h-full w-full object-cover"
+						class="m-0 block h-full! w-full rounded-none! object-contain"
 					/>
 				</div>
 			))

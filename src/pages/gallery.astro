@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import ArtworkCard from '../components/ArtworkCard.astro';
 import ArtworkViewer from '../components/ArtworkViewer.astro';
 import BaseHead from '../components/BaseHead.astro';
+import CollectionCarousel from '../components/CollectionCarousel.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { SITE_TITLE } from '../consts';
@@ -14,7 +15,9 @@ const items = (await getCollection('gallery')).sort(
 );
 
 const collections = (await getCollection('collections')).sort((a, b) => a.data.name.localeCompare(b.data.name));
-const countIn = (id: string) => items.filter((item) => item.data.collection?.id === id).length;
+const counts = Object.fromEntries(
+	collections.map((c) => [c.id, items.filter((item) => item.data.collection?.id === c.id).length]),
+);
 
 const norm = (m: string) => m.trim().toLowerCase();
 const tagsOf = (list?: string[]) => (list ?? []).map(norm);
@@ -41,33 +44,7 @@ const groups = [
 				collections.length > 0 && (
 					<section aria-labelledby="collections-heading">
 						<h2 id="collections-heading" class="mb-4! text-sm! font-bold tracking-widest text-[rgb(var(--gray))] uppercase">Collections</h2>
-						<ul class="m-0 grid list-none grid-cols-1 gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3">
-							{collections.map((c) => (
-								<li>
-									<a
-										href={withBase(`/gallery/collections/${c.id}`)}
-										class="group block overflow-hidden rounded-2xl bg-[rgb(var(--gray-dark))] text-white! no-underline shadow-[var(--box-shadow)]"
-									>
-										<div class="overflow-hidden">
-											<Image
-												src={c.data.image}
-												width={720}
-												height={360}
-												alt={c.data.imageAlt ?? c.data.name}
-												class="aspect-[2/1] h-auto w-full rounded-none! object-cover transition-transform duration-300 group-hover:scale-105"
-											/>
-										</div>
-										<div class="p-5">
-											<span class="block font-title text-2xl leading-tight font-bold">{c.data.name}</span>
-											<span class="mt-1 block text-base text-white/90">{c.data.summary}</span>
-											<span class="mt-2 block text-sm font-bold tracking-widest text-white/80 uppercase">
-												{countIn(c.id)} {countIn(c.id) === 1 ? 'piece' : 'pieces'} &rarr;
-											</span>
-										</div>
-									</a>
-								</li>
-							))}
-						</ul>
+						<CollectionCarousel collections={collections} counts={counts} />
 						<hr class="my-10 border-t-2 border-[rgb(var(--gray-light))]" />
 					</section>
 				)
