@@ -8,8 +8,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://dapperdino.github.io',
-  base: '/awesome-website',
+  site: 'https://www.katieraysonart.co.uk',
   integrations: [mdx(), sitemap()],
 
   fonts: [
